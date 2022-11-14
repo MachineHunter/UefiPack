@@ -1,0 +1,5 @@
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = UefiPackPkg
+  PACKAGE_GUID                   = 9bf0aa34-b00a-423d-b157-14c45821e6b3
+  PACKAGE_VERSION                = 0.1
