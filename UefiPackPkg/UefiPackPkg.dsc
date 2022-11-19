@@ -23,10 +23,10 @@
   UefiLib|MdePkg/Library/UefiLib/UefiLib.inf
   MemoryAllocationLib|MdePkg/Library/UefiMemoryAllocationLib/UefiMemoryAllocationLib.inf
   DevicePathLib|MdePkg/Library/UefiDevicePathLib/UefiDevicePathLib.inf
-	RegisterFilterLib|MdePkg/Library/RegisterFilterLibNull/RegisterFilterLibNull.inf
-	IoLib|MdePkg/Library/BaseIoLibIntrinsic/BaseIoLibIntrinsic.inf
-	TimerLib|MdePkg/Library/BaseTimerLibNullTemplate/BaseTimerLibNullTemplate.inf
-	Tpm2DeviceLib|SecurityPkg/Library/Tpm2DeviceLibDTpm/Tpm2DeviceLibDTpm.inf
+  RegisterFilterLib|MdePkg/Library/RegisterFilterLibNull/RegisterFilterLibNull.inf
+  IoLib|MdePkg/Library/BaseIoLibIntrinsic/BaseIoLibIntrinsic.inf
+  TimerLib|MdePkg/Library/BaseTimerLibNullTemplate/BaseTimerLibNullTemplate.inf
+  Tpm2DeviceLib|SecurityPkg/Library/Tpm2DeviceLibDTpm/Tpm2DeviceLibDTpm.inf
 
   !if $(DEBUG_ENABLE_OUTPUT)
     DebugLib|MdePkg/Library/UefiDebugLibConOut/UefiDebugLibConOut.inf
@@ -37,7 +37,7 @@
 
 
 [Components]
-	# UefiPackPkg/ReadPcrDxe/ReadPcrDxe.inf
-	# UefiPackPkg/SealKeyDxe/SealKeyDxe.inf
-	# UefiPackPkg/UefiPackDxe/UefiPackDxe.inf
-	UefiPackPkg/TestDxe/TestDxe.inf
+  # UefiPackPkg/ReadPcrDxe/ReadPcrDxe.inf
+  # UefiPackPkg/SealKeyDxe/SealKeyDxe.inf
+  # UefiPackPkg/UefiPackDxe/UefiPackDxe.inf
+  UefiPackPkg/TestDxe/TestDxe.inf

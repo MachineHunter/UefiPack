@@ -7,27 +7,27 @@
   ENTRY_POINT                    = DriverEntry
 
 [Sources]
-	SealKeyDxe.h
-	SealKeyDxe.c
-	SealKeyImpl.h
-	SealKeyImpl.c
+  SealKeyDxe.h
+  SealKeyDxe.c
+  SealKeyImpl.h
+  SealKeyImpl.c
 
 [Packages]
-	MdePkg/MdePkg.dec
-	MdeModulePkg/MdeModulePkg.dec
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
   SecurityPkg/SecurityPkg.dec
 
 [LibraryClasses]
-	UefiDriverEntryPoint
-	UefiRuntimeServicesTableLib
-	UefiBootServicesTableLib
-	UefiLib
-	PrintLib
-	IoLib
-	Tpm2DeviceLib
-	TimerLib
+  UefiDriverEntryPoint
+  UefiRuntimeServicesTableLib
+  UefiBootServicesTableLib
+  UefiLib
+  PrintLib
+  IoLib
+  Tpm2DeviceLib
+  TimerLib
 
 [Protocols]
 
 [Depex]
-	TRUE
+  TRUE

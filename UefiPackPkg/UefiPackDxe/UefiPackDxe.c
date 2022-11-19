@@ -3,8 +3,8 @@
 
 /**
  
-	TODO: keys stored in this DXE Driver's global variable
-	needs further investigation if this implementation is safe or not.
+  TODO: keys stored in this DXE Driver's global variable
+  needs further investigation if this implementation is safe or not.
 
 **/
 UINT16 KeyLength = 16;   // AES-128 key so 128bit=16bytes
@@ -27,15 +27,15 @@ BYTE   IV[16]    = {0};
 EFI_STATUS
 EFIAPI
 Unpack (
-		IN VOID   *DataAddr,
-		IN UINT32 DataSize
-		)
+    IN VOID   *DataAddr,
+    IN UINT32 DataSize
+    )
 {
-	struct AES_ctx ctx;
+  struct AES_ctx ctx;
 
-	AES_init_ctx_iv(&ctx, Key, IV);
-	AES_CBC_decrypt_buffer(&ctx, (UINT8*)DataAddr, DataSize);
-	return EFI_SUCCESS;
+  AES_init_ctx_iv(&ctx, Key, IV);
+  AES_CBC_decrypt_buffer(&ctx, (UINT8*)DataAddr, DataSize);
+  return EFI_SUCCESS;
 }
 
 
@@ -59,21 +59,21 @@ EFI_GUID myvarGUID        = {0xeefbd379, 0x9f5c, 0x4a92, { 0xa1, 0x57, 0xae, 0x4
 
 VOID
 DebugVarLog (
-		IN UINT8  No,
-		IN UINT8  Offset,
-		IN VOID*  Val,
-		IN UINT32 ValSize
-		)
+    IN UINT8  No,
+    IN UINT8  Offset,
+    IN VOID*  Val,
+    IN UINT32 ValSize
+    )
 {
-	myvarValue[0] = No;
-	CopyMem(myvarValue+Offset, Val, ValSize);
-	
-	gRT->SetVariable(
-			myvarName,
-			&myvarGUID,
-			EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
-			myvarSize,
-			myvarValue);
+  myvarValue[0] = No;
+  CopyMem(myvarValue+Offset, Val, ValSize);
+  
+  gRT->SetVariable(
+      myvarName,
+      &myvarGUID,
+      EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
+      myvarSize,
+      myvarValue);
 }
 
 
@@ -92,90 +92,90 @@ DebugVarLog (
 **/
 EFI_STATUS
 GetTpmKey (
-		OUT BYTE             *Key,
-		IN  UINT16           KeyLength
-		) 
+    OUT BYTE             *Key,
+    IN  UINT16           KeyLength
+    ) 
 {
-	EFI_STATUS Status;
-	TPM_HANDLE sessionHandle;
-	UINT16     DigestSize = 32;
-	BYTE       Digest[32] = {0};
+  EFI_STATUS Status;
+  TPM_HANDLE sessionHandle;
+  UINT16     DigestSize = 32;
+  BYTE       Digest[32] = {0};
 
-	TPMI_RH_NV_INDEX KeyNvIndex = NV_INDEX_FIRST+1; 
+  TPMI_RH_NV_INDEX KeyNvIndex = NV_INDEX_FIRST+1; 
 
-	//
-	// This sets requestUse bit of TPM_ACCESS_x register (TPM_ACCESS_x[1])
-	//
-	Status = TpmRequestUse();
-	if(EFI_ERROR(Status)) {
-		DebugVarLog(1, 1, &Status, sizeof(EFI_STATUS));
-		return EFI_DEVICE_ERROR;
-	}
+  //
+  // This sets requestUse bit of TPM_ACCESS_x register (TPM_ACCESS_x[1])
+  //
+  Status = TpmRequestUse();
+  if(EFI_ERROR(Status)) {
+    DebugVarLog(1, 1, &Status, sizeof(EFI_STATUS));
+    return EFI_DEVICE_ERROR;
+  }
 
-	//
-	// Start Policy session
-	//
-	Status = TpmStartAuthSession(&sessionHandle);
-	if(EFI_ERROR(Status)) {
-		DebugVarLog(2, 1, &Status, sizeof(EFI_STATUS));
-		return EFI_DEVICE_ERROR;
-	}
+  //
+  // Start Policy session
+  //
+  Status = TpmStartAuthSession(&sessionHandle);
+  if(EFI_ERROR(Status)) {
+    DebugVarLog(2, 1, &Status, sizeof(EFI_STATUS));
+    return EFI_DEVICE_ERROR;
+  }
 
-	//
-	// This is just for reading PCR value of UefiPackDxe's execution phase
-	//
-	Status = TpmPcrRead(
-			TPM_ALG_SHA256,
-			0,
-			Digest,
-			&DigestSize
-			);
-	if(EFI_ERROR(Status)) {
-		DebugVarLog(6, 1, &Status, sizeof(EFI_STATUS));
-		return EFI_DEVICE_ERROR;
-	}
-	DebugVarLog(0, 0x12, Digest, DigestSize);
+  //
+  // This is just for reading PCR value of UefiPackDxe's execution phase
+  //
+  Status = TpmPcrRead(
+      TPM_ALG_SHA256,
+      0,
+      Digest,
+      &DigestSize
+      );
+  if(EFI_ERROR(Status)) {
+    DebugVarLog(6, 1, &Status, sizeof(EFI_STATUS));
+    return EFI_DEVICE_ERROR;
+  }
+  DebugVarLog(0, 0x12, Digest, DigestSize);
 
-	//
-	// Select PCR to use for authorization
-	//
-	Status = TpmPolicyPCR(
-			&sessionHandle,
-			TPM_ALG_SHA256,
-			0
-			);
-	if(Status!=EFI_SUCCESS) {
-		DebugVarLog(3, 1, &Status, sizeof(EFI_STATUS));
-		return EFI_DEVICE_ERROR;
-	}
+  //
+  // Select PCR to use for authorization
+  //
+  Status = TpmPolicyPCR(
+      &sessionHandle,
+      TPM_ALG_SHA256,
+      0
+      );
+  if(Status!=EFI_SUCCESS) {
+    DebugVarLog(3, 1, &Status, sizeof(EFI_STATUS));
+    return EFI_DEVICE_ERROR;
+  }
 
-	//
-	// Read key from TPM NV space (pcr authorization runs here)
-	//
-	Status = TpmNVRead(
-			KeyNvIndex,
-			KeyLength,
-			&sessionHandle,
-			Key
-			);
-	if(Status!=EFI_SUCCESS) {
-		DebugVarLog(4, 1, &Status, sizeof(EFI_STATUS));
-		return EFI_DEVICE_ERROR;
-	}
+  //
+  // Read key from TPM NV space (pcr authorization runs here)
+  //
+  Status = TpmNVRead(
+      KeyNvIndex,
+      KeyLength,
+      &sessionHandle,
+      Key
+      );
+  if(Status!=EFI_SUCCESS) {
+    DebugVarLog(4, 1, &Status, sizeof(EFI_STATUS));
+    return EFI_DEVICE_ERROR;
+  }
 
-	//
-	// End session (somehow error occurs so disabling it for now)
-	//
-	/*
-	 *Status = TpmFlushContext(&sessionHandle);
-	 *if(EFI_ERROR(Status)) {
-	 *  DebugVarLog(5, 1, &Status, sizeof(EFI_STATUS));
-	 *  return EFI_DEVICE_ERROR;
-	 *}
-	 */
+  //
+  // End session (somehow error occurs so disabling it for now)
+  //
+  /*
+   *Status = TpmFlushContext(&sessionHandle);
+   *if(EFI_ERROR(Status)) {
+   *  DebugVarLog(5, 1, &Status, sizeof(EFI_STATUS));
+   *  return EFI_DEVICE_ERROR;
+   *}
+   */
 
-	DebugVarLog(9, 1, Key, KeyLength);
-	return EFI_SUCCESS;
+  DebugVarLog(9, 1, Key, KeyLength);
+  return EFI_SUCCESS;
 }
 
 
@@ -193,58 +193,58 @@ GetTpmKey (
 EFI_STATUS
 EFIAPI 
 DriverEntry(
-		IN EFI_HANDLE ImageHandle,
-		IN EFI_SYSTEM_TABLE *SystemTable
-		)
+    IN EFI_HANDLE ImageHandle,
+    IN EFI_SYSTEM_TABLE *SystemTable
+    )
 {
-	EFI_STATUS Status;
+  EFI_STATUS Status;
 
-	//
-	// 1: Read and set Key as a global variable
-	//    (just return success to continue execution for debug)
-	//
-	Status = GetTpmKey(Key, KeyLength);
-	if(EFI_ERROR(Status)) {
-		return EFI_SUCCESS;
-	}
+  //
+  // 1: Read and set Key as a global variable
+  //    (just return success to continue execution for debug)
+  //
+  Status = GetTpmKey(Key, KeyLength);
+  if(EFI_ERROR(Status)) {
+    return EFI_SUCCESS;
+  }
 
-	// 
-	// 2: Install UefiPackProtocol
-	//
-	EFI_HANDLE mUefiPackHandle = NULL;
-	EFI_UEFI_PACK_PROTOCOL mUefiPack = {
-		Unpack
-	};
+  // 
+  // 2: Install UefiPackProtocol
+  //
+  EFI_HANDLE mUefiPackHandle = NULL;
+  EFI_UEFI_PACK_PROTOCOL mUefiPack = {
+    Unpack
+  };
 
-	gBS->InstallMultipleProtocolInterfaces(
-			&mUefiPackHandle,
-			&gEfiUefiPackProtocolGuid,
-			&mUefiPack,
-			NULL
-			);
+  gBS->InstallMultipleProtocolInterfaces(
+      &mUefiPackHandle,
+      &gEfiUefiPackProtocolGuid,
+      &mUefiPack,
+      NULL
+      );
 
-	// 
-	// 3: Just a testing of UefiPackProtocol
-	//
-	BYTE buf[0x10] = {0};
-	UINT32 i;
-	for(i=0; i<0x10; i++) {
-		buf[i] = i;
-	}
+  // 
+  // 3: Just a testing of UefiPackProtocol
+  //
+  BYTE buf[0x10] = {0};
+  UINT32 i;
+  for(i=0; i<0x10; i++) {
+    buf[i] = i;
+  }
 
-	struct AES_ctx ctx;
-	AES_init_ctx_iv(&ctx, Key, IV);
-	AES_CBC_encrypt_buffer(&ctx, (UINT8*)buf, 0x10);
+  struct AES_ctx ctx;
+  AES_init_ctx_iv(&ctx, Key, IV);
+  AES_CBC_encrypt_buffer(&ctx, (UINT8*)buf, 0x10);
 
-	EFI_UEFI_PACK_PROTOCOL *UefiPackProtocol;
-	gBS->LocateProtocol(
-			&gEfiUefiPackProtocolGuid,
-			NULL,
-			(VOID**)&UefiPackProtocol
-			);
-	UefiPackProtocol->Unpack(buf, 0x10);
+  EFI_UEFI_PACK_PROTOCOL *UefiPackProtocol;
+  gBS->LocateProtocol(
+      &gEfiUefiPackProtocolGuid,
+      NULL,
+      (VOID**)&UefiPackProtocol
+      );
+  UefiPackProtocol->Unpack(buf, 0x10);
 
-	DebugVarLog(0, 0x33, buf, 0x10);
-	
-	return EFI_SUCCESS;
+  DebugVarLog(0, 0x33, buf, 0x10);
+  
+  return EFI_SUCCESS;
 }

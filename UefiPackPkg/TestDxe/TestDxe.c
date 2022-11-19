@@ -10,47 +10,47 @@ EFI_GUID myvarGUID = { 0x4bd56579, 0x9d59, 0x4e0f, { 0xb3, 0xab, 0x7a, 0x3a, 0xc
 EFI_HANDLE mDummyHandle = NULL;
 
 EFI_STATUS EFIAPI DummyFunc1() {
-	AsciiSPrint(myvarValue, 18, "DummyFunc1 called");
-	gRT->SetVariable(
-			myvarName,
-			&myvarGUID,
-			EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
-			myvarSize,
-			myvarValue);
-	return EFI_SUCCESS;
+  AsciiSPrint(myvarValue, 18, "DummyFunc1 called");
+  gRT->SetVariable(
+      myvarName,
+      &myvarGUID,
+      EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
+      myvarSize,
+      myvarValue);
+  return EFI_SUCCESS;
 }
 
 EFI_STATUS EFIAPI DummyFunc2() {
-	AsciiSPrint(myvarValue, 18, "DummyFunc2 called");
-	gRT->SetVariable(
-			myvarName,
-			&myvarGUID,
-			EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
-			myvarSize,
-			myvarValue);
-	return EFI_SUCCESS;
+  AsciiSPrint(myvarValue, 18, "DummyFunc2 called");
+  gRT->SetVariable(
+      myvarName,
+      &myvarGUID,
+      EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
+      myvarSize,
+      myvarValue);
+  return EFI_SUCCESS;
 }
 
 EFI_DUMMY_PROTOCOL mDummy = {
-	DummyFunc1,
-	DummyFunc2
+  DummyFunc1,
+  DummyFunc2
 };
 
 EFI_STATUS EFIAPI DxeEntry(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable) {
-	gBS->InstallMultipleProtocolInterfaces(&mDummyHandle, &gEfiDummyProtocolGuid, &mDummy, NULL);
+  gBS->InstallMultipleProtocolInterfaces(&mDummyHandle, &gEfiDummyProtocolGuid, &mDummy, NULL);
 
-	EFI_TIME time;
+  EFI_TIME time;
 
-	gRT->GetTime(&time, NULL);
+  gRT->GetTime(&time, NULL);
 
-	AsciiSPrint(myvarValue, 12, "%2d/%2d %2d:%2d", time.Month, time.Day, time.Hour, time.Minute);
+  AsciiSPrint(myvarValue, 12, "%2d/%2d %2d:%2d", time.Month, time.Day, time.Hour, time.Minute);
 
-	gRT->SetVariable(
-			myvarName,
-			&myvarGUID,
-			EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
-			myvarSize,
-			myvarValue);
+  gRT->SetVariable(
+      myvarName,
+      &myvarGUID,
+      EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
+      myvarSize,
+      myvarValue);
 
-	return EFI_SUCCESS;
+  return EFI_SUCCESS;
 }

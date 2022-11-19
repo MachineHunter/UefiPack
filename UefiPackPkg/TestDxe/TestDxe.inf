@@ -7,23 +7,23 @@
   ENTRY_POINT                    = DxeEntry
 
 [Sources]
-	TestDxe.h
-	TestDxe.c
+  TestDxe.h
+  TestDxe.c
 
 [Packages]
-	MdePkg/MdePkg.dec
-	MdeModulePkg/MdeModulePkg.dec
-	UefiPackPkg/UefiPackPkg.dec
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  UefiPackPkg/UefiPackPkg.dec
 
 [LibraryClasses]
-	UefiDriverEntryPoint
-	UefiRuntimeServicesTableLib
-	UefiBootServicesTableLib
-	UefiLib
-	PrintLib
+  UefiDriverEntryPoint
+  UefiRuntimeServicesTableLib
+  UefiBootServicesTableLib
+  UefiLib
+  PrintLib
 
 [Protocols]
-	gEfiDummyProtocolGuid   ## PRODUCES
+  gEfiDummyProtocolGuid   ## PRODUCES
 
 [Depex]
-	TRUE
+  TRUE

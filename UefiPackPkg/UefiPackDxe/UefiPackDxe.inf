@@ -7,31 +7,31 @@
   ENTRY_POINT                    = DriverEntry
 
 [Sources]
-	UefiPackDxe.h
-	UefiPackDxe.c
-	UefiPackImpl.h
-	UefiPackImpl.c
-	tiny-AES-c/aes.h
-	tiny-AES-c/aes.c
+  UefiPackDxe.h
+  UefiPackDxe.c
+  UefiPackImpl.h
+  UefiPackImpl.c
+  tiny-AES-c/aes.h
+  tiny-AES-c/aes.c
 
 [Packages]
-	MdePkg/MdePkg.dec
-	MdeModulePkg/MdeModulePkg.dec
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
   SecurityPkg/SecurityPkg.dec
-	UefiPackPkg/UefiPackPkg.dec
+  UefiPackPkg/UefiPackPkg.dec
 
 [LibraryClasses]
-	UefiDriverEntryPoint
-	UefiRuntimeServicesTableLib
-	UefiBootServicesTableLib
-	UefiLib
-	PrintLib
-	IoLib
-	Tpm2DeviceLib
-	TimerLib
+  UefiDriverEntryPoint
+  UefiRuntimeServicesTableLib
+  UefiBootServicesTableLib
+  UefiLib
+  PrintLib
+  IoLib
+  Tpm2DeviceLib
+  TimerLib
 
 [Protocols]
-	gEfiUefiPackProtocolGuid     ## PRODUCES
+  gEfiUefiPackProtocolGuid     ## PRODUCES
 
 [Depex]
-	TRUE
+  TRUE
