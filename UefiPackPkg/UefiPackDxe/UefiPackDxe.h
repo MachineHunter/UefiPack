@@ -6,6 +6,37 @@
 #include <IndustryStandard/Tpm20.h>
 #include <Library/Tpm2DeviceLib.h>
 
+#include "tiny-AES-c/aes.h"
+
+
+/**
+ 
+	Define UefiPackProtocol's general information.
+
+**/
+
+// 73c29316-3ecd-4fe3-a4bb-5ef7ffca82fb
+#define EFI_UEFI_PACK_PROTOCOL_GUID \
+	{ 0x73c29316, 0x3ecd, 0x4fe3, { 0xa4, 0xbb, 0x5e, 0xf7, 0xff, 0xca, 0x82, 0xfb } }
+
+extern EFI_GUID gEfiUefiPackProtocolGuid;
+
+typedef EFI_STATUS (EFIAPI *UNPACK)();
+
+typedef struct _EFI_UEFI_PACK_PROTOCOL {
+	UNPACK Unpack;
+} EFI_UEFI_PACK_PROTOCOL;
+
+
+
+/**
+ 
+	Define TPM structures used when retrieving key.
+
+	TPM has canonicalization mechanism which requires us
+	to redefine structure that has "sized buffer".
+
+**/
 #pragma pack(1)
 	typedef struct _ORIG_TPM2B_NONCE {
 		UINT16 size;

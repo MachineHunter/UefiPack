@@ -7,6 +7,14 @@
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/Tpm2DeviceLib.h>
 
+/**
+ 
+	Define TPM structures used when sealing key.
+
+	TPM has canonicalization mechanism which requires us
+	to redefine structure that has "sized buffer".
+
+**/
 #pragma pack(1)
 	typedef struct {
 		UINT16 size;

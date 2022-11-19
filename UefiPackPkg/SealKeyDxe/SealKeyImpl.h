@@ -1,5 +1,13 @@
 #include <SealKeyDxe.h>
 
+
+/**
+ 
+ Define wrapper functions for TPM command
+ used when sealing key from TPM.
+
+**/
+
 EFI_STATUS
 TpmRequestUse (
 		VOID

@@ -1,5 +1,13 @@
 #include <UefiPackDxe.h>
 
+
+/**
+ 
+ Define wrapper functions for TPM command
+ used when retrieving key from TPM.
+
+**/
+
 EFI_STATUS
 TpmRequestUse (
 		VOID

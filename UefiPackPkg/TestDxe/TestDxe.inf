@@ -1,23 +1,18 @@
 [Defines]
   INF_VERSION                    = 0x00010006
-  BASE_NAME                      = UefiPackDxe
-  FILE_GUID                      = 9d46dccd-ea11-4808-93e9-9b7021889b2d
+  BASE_NAME                      = TestDxe
+  FILE_GUID                      = d28791ac-72ba-4d82-99f9-bed74f626185
   MODULE_TYPE                    = DXE_DRIVER
   VERSION_STRING                 = 1.0
-  ENTRY_POINT                    = DriverEntry
+  ENTRY_POINT                    = DxeEntry
 
 [Sources]
-	UefiPackDxe.h
-	UefiPackDxe.c
-	UefiPackImpl.h
-	UefiPackImpl.c
-	tiny-AES-c/aes.h
-	tiny-AES-c/aes.c
+	TestDxe.h
+	TestDxe.c
 
 [Packages]
 	MdePkg/MdePkg.dec
 	MdeModulePkg/MdeModulePkg.dec
-  SecurityPkg/SecurityPkg.dec
 	UefiPackPkg/UefiPackPkg.dec
 
 [LibraryClasses]
@@ -26,12 +21,9 @@
 	UefiBootServicesTableLib
 	UefiLib
 	PrintLib
-	IoLib
-	Tpm2DeviceLib
-	TimerLib
 
 [Protocols]
-	gEfiUefiPackProtocolGuid     ## PRODUCES
+	gEfiDummyProtocolGuid   ## PRODUCES
 
 [Depex]
 	TRUE

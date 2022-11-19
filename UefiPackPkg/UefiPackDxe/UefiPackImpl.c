@@ -1,6 +1,12 @@
 #include "UefiPackImpl.h"
 
 
+/**
+ 
+ This function sets requestUse bit of TPM_ACCESS_x register (TPM_ACCESS_x[1]).
+ Just a wrapper function that calls the function defined in Tpm2DeviceLib
+
+**/
 EFI_STATUS
 TpmRequestUse (
 		VOID
@@ -11,6 +17,14 @@ TpmRequestUse (
 
 
 
+/**
+ 
+ This function starts Policy session of TPM.
+ sessionHandle needs to be specified in each command related to this session.
+ 
+ @param[out]  sessionHandle  Returns a handle for this session
+ 
+**/
 EFI_STATUS
 TpmStartAuthSession (
 		OUT TPM_HANDLE *sessionHandle
@@ -65,6 +79,19 @@ TpmStartAuthSession (
 
 
 
+/**
+ 
+ This function reads pcr value specified.
+ PCR bank is specified by AlgId because bank are seperated by the hash algorithm.
+ PcrId is the index for PCR[PcrId]. PCRs are seperated by what types of info to store.
+ Further information are explained in my article https://dev.to/machinehunter/reading-pcr-value-from-uefi-4a82.
+ 
+ @param[in]   AlgId       Hash algorithm which specifies bank of PCR
+ @param[in]   PcrId       PCR number to use (only one PCR can be read by this func)
+ @param[out]  Digest      PCR value read
+ @param[out]  DigestSize  Size of Digest
+ 
+**/
 EFI_STATUS
 TpmPcrRead (
 		IN  TPM_ALG_ID AlgId,
@@ -133,6 +160,17 @@ TpmPcrRead (
 
 
 
+/**
+ 
+ This function makes session require/use PCR evaluation.
+ This requires PCR[PcrId] value of AlgId hash algorithm to match
+ the value specified when sealing the key by SealKeyDxe.
+ 
+ @param[in]   sessionHandle  Handle of the session made by StartAuthSession
+ @param[in]   AlgId          Hash algorithm which specifies bank of PCR
+ @param[in]   PcrId          PCR number to use (only one PCR can be read by this func)
+ 
+**/
 EFI_STATUS
 TpmPolicyPCR (
 		IN TPM_HANDLE *sessionHandle,
@@ -195,6 +233,18 @@ TpmPolicyPCR (
 
 
 
+/**
+ 
+ This function reads key from TPM NV space.
+ Authorization occurs at this timing comparing current PCR value selected by PolicyPCR
+ and the value specified when Seal (SealKeyDxe).
+ 
+ @param[in]   KeyNvIndex     Index of TPM NV space where key is stored
+ @param[in]   KeyLength      Size to read from KeyNvIndex which will be the size of the key
+ @param[in]   sessionHandle  Handle of the session made by StartAuthSession
+ @param[out]  Key            Returns key value read from TPM (byte swapped inside this func)
+ 
+**/
 EFI_STATUS
 TpmNVRead (
 		IN  TPMI_RH_NV_INDEX KeyNvIndex,
@@ -268,6 +318,14 @@ TpmNVRead (
 
 
 
+/**
+ 
+ This function ends session.
+ (somehow doesn't work... not much a problem though)
+ 
+ @param[in]  sessionHandle  Handle of the session made by StartAuthSession
+ 
+**/
 EFI_STATUS
 TpmFlushContext (
 		IN  TPM_HANDLE *sessionHandle
