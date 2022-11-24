@@ -1,10 +1,5 @@
 # UefiPack
 Encrypts UEFI Modules (mostly DXE Driver) by AES-128 using key sealed in TPM2.0 device.  
-> **Warning**
-> This project is still work in progress.
-> UefiPackPkg works just fine, but when DXE Driver is packed by UefiPackPacker,
-> execution will stop to that DXE Driver and boot will fail.
-
 
 <br/>
 
@@ -31,10 +26,6 @@ Encrypts UEFI Modules (mostly DXE Driver) by AES-128 using key sealed in TPM2.0 
 ### UefiPackPacker
 1. open UefiPackPacker.sln with Visual Studio 2019
 2. `Ctrl-b` to build
-
-> **Note**
-> Pre-built binaries are going to be uploaded when I resolved the error
-> stated in the warning.
 
 
 <br/>
