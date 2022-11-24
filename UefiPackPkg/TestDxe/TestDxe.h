@@ -4,6 +4,7 @@
 #include <Library/UefiDriverEntryPoint.h>
 #include <Library/UefiRuntimeServicesTableLib.h>
 #include <Library/UefiBootServicesTableLib.h>
+#include <UefiPackDxe/UefiPackDxe.h>
 
 
 /**

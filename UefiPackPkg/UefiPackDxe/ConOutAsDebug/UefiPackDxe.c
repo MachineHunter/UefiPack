@@ -13,7 +13,6 @@ BYTE   IV[16]    = {0};
 
 
 
-
 /**
  
  Unpack function of UefiPackProtocol.
@@ -36,49 +35,6 @@ Unpack (
   AES_init_ctx_iv(&ctx, Key, IV);
   AES_CBC_decrypt_buffer(&ctx, (UINT8*)DataAddr, DataSize);
   return EFI_SUCCESS;
-}
-
-EFI_HANDLE mUefiPackHandle = NULL;
-EFI_UEFI_PACK_PROTOCOL mUefiPack = {
-  Unpack
-};
-
-
-
-/**
- 
- Function to write data into UEFI variable (MyDxeStatus) for debugging purpose.
- Since my environment doesn't show outputs to screen using ConOut, I'm refering
- this UEFI variable to check the output from Dxe driver.
-
- @param[in]  No       Id value indicating what function went wrong
- @param[in]  Offset   Offset from the start of MyDxeStatus
- @param[in]  Val      Value to write at the Offset
- @param[in]  ValSize  Size of Val
-
-**/
-UINT32   myvarSize        = 0x50;
-CHAR8    myvarValue[0x50] = {0};
-CHAR16   myvarName[30]    = L"MyDxeStatus";
-EFI_GUID myvarGUID        = {0xeefbd379, 0x9f5c, 0x4a92, { 0xa1, 0x57, 0xae, 0x40, 0x79, 0xeb, 0x14, 0x48 }}; // eefbd379-9f5c-4a92-a157-ae4079eb1448
-
-VOID
-DebugVarLog (
-    IN UINT8  No,
-    IN UINT8  Offset,
-    IN VOID*  Val,
-    IN UINT32 ValSize
-    )
-{
-  myvarValue[0] = No;
-  CopyMem(myvarValue+Offset, Val, ValSize);
-  
-  gRT->SetVariable(
-      myvarName,
-      &myvarGUID,
-      EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
-      myvarSize,
-      myvarValue);
 }
 
 
@@ -113,7 +69,7 @@ GetTpmKey (
   //
   Status = TpmRequestUse();
   if(EFI_ERROR(Status)) {
-    DebugVarLog(1, 1, &Status, sizeof(EFI_STATUS));
+    DEBUG((DEBUG_ERROR, "[UefiPackDxe] TpmRequestUse failed with EFI_STATUS: %d\r\n", Status));
     return EFI_DEVICE_ERROR;
   }
 
@@ -122,7 +78,7 @@ GetTpmKey (
   //
   Status = TpmStartAuthSession(&sessionHandle);
   if(EFI_ERROR(Status)) {
-    DebugVarLog(2, 1, &Status, sizeof(EFI_STATUS));
+    DEBUG((DEBUG_ERROR, "[UefiPackDxe] TpmStartAuthSession failed with EFI_STATUS: %d\r\n", Status));
     return EFI_DEVICE_ERROR;
   }
 
@@ -136,10 +92,14 @@ GetTpmKey (
       &DigestSize
       );
   if(EFI_ERROR(Status)) {
-    DebugVarLog(6, 1, &Status, sizeof(EFI_STATUS));
+    DEBUG((DEBUG_ERROR, "[UefiPackDxe] TpmPcrRead failed with EFI_STATUS: %d\r\n", Status));
     return EFI_DEVICE_ERROR;
   }
-  DebugVarLog(0, 0x12, Digest, DigestSize);
+  DEBUG((DEBUG_INFO, "[UefiPackDxe] SHA256 hash value of PCR[0]: \r\n"));
+  UINT32 i;
+  for(i=0; i<DigestSize; i++)
+    DEBUG((DEBUG_INFO, "%02X", Digest[i]));
+  DEBUG((DEBUG_INFO, "\r\n"));
 
   //
   // Select PCR to use for authorization
@@ -150,7 +110,7 @@ GetTpmKey (
       0
       );
   if(Status!=EFI_SUCCESS) {
-    DebugVarLog(3, 1, &Status, sizeof(EFI_STATUS));
+    DEBUG((DEBUG_ERROR, "[UefiPackDxe] TpmPolicyPCR failed with %d\r\n", Status));
     return EFI_DEVICE_ERROR;
   }
 
@@ -164,7 +124,7 @@ GetTpmKey (
       Key
       );
   if(Status!=EFI_SUCCESS) {
-    DebugVarLog(4, 1, &Status, sizeof(EFI_STATUS));
+    DEBUG((DEBUG_ERROR, "[UefiPackDxe] TpmNVRead failed with %d\r\n", Status));
     return EFI_DEVICE_ERROR;
   }
 
@@ -174,12 +134,19 @@ GetTpmKey (
   /*
    *Status = TpmFlushContext(&sessionHandle);
    *if(EFI_ERROR(Status)) {
-   *  DebugVarLog(5, 1, &Status, sizeof(EFI_STATUS));
+   *  DEBUG((DEBUG_ERROR, "[UefiPackDxe] TpmFlushContext failed with EFI_STATUS: %d\r\n", Status));
    *  return EFI_DEVICE_ERROR;
    *}
    */
 
-  DebugVarLog(9, 1, Key, KeyLength);
+  //
+  // Output the result
+  //
+  DEBUG((DEBUG_INFO, "[UefiPackDxe] Key successfully read as: \r\n"));
+  for(i=0; i<KeyLength; i++)
+    DEBUG((DEBUG_INFO, "%02X", Key[i]));
+  DEBUG((DEBUG_INFO, "\r\n"));
+
   return EFI_SUCCESS;
 }
 
@@ -203,6 +170,7 @@ DriverEntry(
     )
 {
   EFI_STATUS Status;
+  UINT32 i;
 
   //
   // 1: Read and set Key as a global variable
@@ -216,6 +184,10 @@ DriverEntry(
   // 
   // 2: Install UefiPackProtocol
   //
+  EFI_HANDLE mUefiPackHandle = NULL;
+  EFI_UEFI_PACK_PROTOCOL mUefiPack = {
+    Unpack
+  };
 
   gBS->InstallMultipleProtocolInterfaces(
       &mUefiPackHandle,
@@ -227,15 +199,27 @@ DriverEntry(
   // 
   // 3: Just a testing of UefiPackProtocol
   //
+  DEBUG((DEBUG_INFO, "[UefiPackDxe] Testing UefiPackProtocol...\r\n"));
+  DEBUG((DEBUG_INFO, "[UefiPackDxe] original data: "));
+
   BYTE buf[0x10] = {0};
-  UINT32 i;
   for(i=0; i<0x10; i++) {
     buf[i] = i;
+    DEBUG((DEBUG_INFO, "%02X", buf[i]));
   }
+  DEBUG((DEBUG_INFO, "\r\n"));
+
 
   struct AES_ctx ctx;
   AES_init_ctx_iv(&ctx, Key, IV);
   AES_CBC_encrypt_buffer(&ctx, (UINT8*)buf, 0x10);
+
+  DEBUG((DEBUG_INFO, "[UefiPackDxe] encrypted: "));
+  for(i=0; i<0x10; i++) {
+    DEBUG((DEBUG_INFO, "%02X", buf[i]));
+  }
+  DEBUG((DEBUG_INFO, "\r\n"));
+
 
   EFI_UEFI_PACK_PROTOCOL *UefiPackProtocol;
   gBS->LocateProtocol(
@@ -245,7 +229,11 @@ DriverEntry(
       );
   UefiPackProtocol->Unpack(buf, 0x10);
 
-  DebugVarLog(0, 0x33, buf, 0x10);
-  
+  DEBUG((DEBUG_INFO, "[UefiPackDxe] decrypted: "));
+  for(i=0; i<0x10; i++) {
+    DEBUG((DEBUG_INFO, "%02X", buf[i]));
+  }
+  DEBUG((DEBUG_INFO, "\r\n"));
+
   return EFI_SUCCESS;
 }

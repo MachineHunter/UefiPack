@@ -39,5 +39,7 @@
 [Components]
   # UefiPackPkg/ReadPcrDxe/ReadPcrDxe.inf
   # UefiPackPkg/SealKeyDxe/SealKeyDxe.inf
+  # UefiPackPkg/SealKeyDxe/ConOutAsDebug/SealKeyDxe.inf
   # UefiPackPkg/UefiPackDxe/UefiPackDxe.inf
   UefiPackPkg/TestDxe/TestDxe.inf
+  # UefiPackPkg/UefiPackDxe/ConOutAsDebug/UefiPackDxe.inf

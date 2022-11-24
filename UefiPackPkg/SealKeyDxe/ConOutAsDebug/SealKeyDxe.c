@@ -14,10 +14,6 @@ EFI_STATUS EFIAPI DriverEntry(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Sy
   TPMI_RH_NV_INDEX KeyNvIndex = NV_INDEX_FIRST+1;  // this is the nvIndex to store AES key. in this case, NV_INDEX_FIRST+1
   UINT16   KeyLength          = 16;                // AES-128 key so 128bit=16bytes
   BYTE     Key[16]            = {0};               // REMEMBER when changing KeyLength, change ORIG_MAX_NV_BUFFER in typedef too!
-  UINT32   myvarSize          = 30;
-  CHAR8    myvarValue[30]     = {0};
-  CHAR16   myvarName[30]      = L"MyDxeStatus";
-  EFI_GUID myvarGUID          = { 0xeefbd379, 0x9f5c, 0x4a92, { 0xa1, 0x57, 0xae, 0x40, 0x79, 0xeb, 0x14, 0x48 }}; // eefbd379-9f5c-4a92-a157-ae4079eb1448
   
   //
   // Only Dxe driver running when PCR digest value is below can read this key.
@@ -35,14 +31,6 @@ EFI_STATUS EFIAPI DriverEntry(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Sy
     0x1d, 0xb8, 0xdf, 0xe7, 0x48, 0xc9, 0xf2, 0x54,
     0xb7, 0xb2, 0xe1, 0x36, 0x77, 0x55, 0xd2, 0xc6
   };
-  /*
-   *BYTE ExpectedPcrVal[32]   = { 
-   *  0xBD, 0x12, 0xA4, 0x67, 0xA8, 0xC4, 0x08, 0xF9,
-   *  0xC2, 0xB7, 0xD9, 0xF9, 0xAD, 0x6E, 0xAF, 0xFA,
-   *  0x66, 0x3D, 0x8F, 0xAC, 0xB5, 0x0A, 0x48, 0xBD,
-   *  0xEE, 0xEF, 0xF9, 0x2B, 0x2B, 0x64, 0x46, 0x07
-   *};
-   */
   
   EFI_STATUS Status;
   TPM_HANDLE sessionHandle;
@@ -55,9 +43,8 @@ EFI_STATUS EFIAPI DriverEntry(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Sy
   //
   Status = TpmRequestUse();
   if(EFI_ERROR(Status)) {
-    myvarValue[0] = 1;
-    CopyMem(myvarValue+1, &Status, sizeof(EFI_STATUS));
-    goto End;
+    DEBUG((DEBUG_ERROR, "[SealKeyDxe] TpmRequestUse Failed with EFI_STATUS: %d\r\n", Status));
+    ASSERT_EFI_ERROR(Status);
   }
 
   //
@@ -65,9 +52,8 @@ EFI_STATUS EFIAPI DriverEntry(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Sy
   //
   Status = TpmStartAuthSession(&sessionHandle);
   if(EFI_ERROR(Status)) {
-    myvarValue[0] = 2;
-    CopyMem(myvarValue+1, &Status, sizeof(EFI_STATUS));
-    goto End;
+    DEBUG((DEBUG_ERROR, "[SealKeyDxe] TpmStartAuthSession Failed with EFI_STATUS: %d\r\n", Status));
+    ASSERT_EFI_ERROR(Status);
   }
 
   //
@@ -81,9 +67,8 @@ EFI_STATUS EFIAPI DriverEntry(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Sy
       ExpectedPcrValSize
       );
   if(EFI_ERROR(Status)) {
-    myvarValue[0] = 3;
-    CopyMem(myvarValue+1, &Status, sizeof(EFI_STATUS));
-    goto End;
+    DEBUG((DEBUG_ERROR, "[SealKeyDxe] TpmPolicyPCR Failed with EFI_STATUS: %d\r\n", Status));
+    ASSERT_EFI_ERROR(Status);
   }
 
   //
@@ -95,9 +80,8 @@ EFI_STATUS EFIAPI DriverEntry(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Sy
       Digest
       );
   if(EFI_ERROR(Status)) {
-    myvarValue[0] = 4;
-    CopyMem(myvarValue+1, &Status, sizeof(EFI_STATUS));
-    goto End;
+    DEBUG((DEBUG_ERROR, "[SealKeyDxe] TpmPolicyGetDigest Failed with EFI_STATUS: %d\r\n", Status));
+    ASSERT_EFI_ERROR(Status);
   }
 
   //
@@ -108,9 +92,8 @@ EFI_STATUS EFIAPI DriverEntry(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Sy
       Key
       );
   if(EFI_ERROR(Status)) {
-    myvarValue[0] = 5;
-    CopyMem(myvarValue+1, &Status, sizeof(EFI_STATUS));
-    goto End;
+    DEBUG((DEBUG_ERROR, "[SealKeyDxe] TpmGetRadom Failed with EFI_STATUS: %d\r\n", Status));
+    ASSERT_EFI_ERROR(Status);
   }
 
   //
@@ -123,9 +106,8 @@ EFI_STATUS EFIAPI DriverEntry(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Sy
       Digest
       );
   if(EFI_ERROR(Status)) {
-    myvarValue[0] = 6;
-    CopyMem(myvarValue+1, &Status, sizeof(EFI_STATUS));
-    goto End;
+    DEBUG((DEBUG_ERROR, "[SealKeyDxe] TpmNVDefineSpace Failed with EFI_STATUS: %d\r\n", Status));
+    ASSERT_EFI_ERROR(Status);
   }
 
   //
@@ -137,9 +119,8 @@ EFI_STATUS EFIAPI DriverEntry(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Sy
       Key
       );
   if(EFI_ERROR(Status)) {
-    myvarValue[0] = 7;
-    CopyMem(myvarValue+1, &Status, sizeof(EFI_STATUS));
-    goto End;
+    DEBUG((DEBUG_ERROR, "[SealKeyDxe] TpmNVWrite Failed with EFI_STATUS: %d\r\n", Status));
+    ASSERT_EFI_ERROR(Status);
   }
 
   //
@@ -147,26 +128,21 @@ EFI_STATUS EFIAPI DriverEntry(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Sy
   //
   Status = TpmFlushContext(&sessionHandle);
   if(EFI_ERROR(Status)) {
-    myvarValue[0] = 8;
-    CopyMem(myvarValue+1, &Status, sizeof(EFI_STATUS));
-    goto End;
+    DEBUG((DEBUG_ERROR, "[SealKeyDxe] TpmFlushContext Failed with EFI_STATUS: %d\r\n", Status));
+    ASSERT_EFI_ERROR(Status);
   }
 
 
   //
-  // Store results or error message inside UEFI variable
-  // (because my environment can't use ConOut and display output...)
+  // Output results
   //
-  myvarValue[0] = 9;
-  CopyMem(myvarValue+1, Key, KeyLength);
-
-End:
-  gRT->SetVariable(
-      myvarName,
-      &myvarGUID,
-      EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
-      myvarSize,
-      myvarValue);
+  DEBUG((DEBUG_INFO, "[SealKeyDxe] Key stored success fully!!!\r\n"));
+  DEBUG((DEBUG_INFO, "             - NV Index: %d\r\n", KeyNvIndex));
+  DEBUG((DEBUG_INFO, "             - Key: ", KeyNvIndex));
+  UINT32 i;
+  for(i=0; i<KeyLength; i++)
+    DEBUG((DEBUG_INFO, "%02X", Key[i]));
+  DEBUG((DEBUG_INFO, "\r\n"));
 
   return EFI_SUCCESS;
 }

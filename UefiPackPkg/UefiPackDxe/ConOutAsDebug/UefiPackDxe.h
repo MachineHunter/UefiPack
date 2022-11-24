@@ -5,6 +5,7 @@
 #include <Library/BaseMemoryLib.h>
 #include <IndustryStandard/Tpm20.h>
 #include <Library/Tpm2DeviceLib.h>
+#include <Library/DebugLib.h>
 
 #include "tiny-AES-c/aes.h"
 
@@ -21,10 +22,7 @@
 
 extern EFI_GUID gEfiUefiPackProtocolGuid;
 
-typedef EFI_STATUS (EFIAPI *UNPACK)(
-    IN VOID *DataAddr,
-    IN UINT32 DataSize
-    );
+typedef EFI_STATUS (EFIAPI *UNPACK)();
 
 typedef struct _EFI_UEFI_PACK_PROTOCOL {
   UNPACK Unpack;
