@@ -27,19 +27,36 @@
   IoLib|MdePkg/Library/BaseIoLibIntrinsic/BaseIoLibIntrinsic.inf
   TimerLib|MdePkg/Library/BaseTimerLibNullTemplate/BaseTimerLibNullTemplate.inf
   Tpm2DeviceLib|SecurityPkg/Library/Tpm2DeviceLibDTpm/Tpm2DeviceLibDTpm.inf
+  DebugLib|MdePkg/Library/BaseDebugLibNull/BaseDebugLibNull.inf
 
+
+
+[LibraryClasses.common.DXE_DRIVER]
   !if $(DEBUG_ENABLE_OUTPUT)
     DebugLib|MdePkg/Library/UefiDebugLibConOut/UefiDebugLibConOut.inf
     DebugPrintErrorLevelLib|MdePkg/Library/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib.inf
   !else   ## DEBUG_ENABLE_OUTPUT
     DebugLib|MdePkg/Library/BaseDebugLibNull/BaseDebugLibNull.inf
   !endif  ## DEBUG_ENABLE_OUTPUT
+  
+
+
+[LibraryClasses.common.DXE_SMM_DRIVER]
+  SmmServicesTableLib|MdePkg/Library/SmmServicesTableLib/SmmServicesTableLib.inf
+  MmServicesTableLib|MdePkg/Library/MmServicesTableLib/MmServicesTableLib.inf
+  BaseCryptLib|CryptoPkg/Library/BaseCryptLib/SmmCryptLib.inf
+  SmmIoLib|MdePkg/Library/SmmIoLib/SmmIoLib.inf
 
 
 [Components]
+  UefiPackPkg/TestSmm/TestSmm.inf
+  # UefiPackPkg/ProtocolTestSmm/ProtocolTestSmm.inf
+  # UefiPackPkg/UartTestDxe/UartTestDxe.inf
+  # UefiPackPkg/UefiPackSmm/UefiPackSmm.inf
   # UefiPackPkg/ReadPcrDxe/ReadPcrDxe.inf
+  # UefiPackPkg/ReadPcrDxe2/ReadPcrDxe2.inf
   # UefiPackPkg/SealKeyDxe/SealKeyDxe.inf
   # UefiPackPkg/SealKeyDxe/ConOutAsDebug/SealKeyDxe.inf
   # UefiPackPkg/UefiPackDxe/UefiPackDxe.inf
-  UefiPackPkg/TestDxe/TestDxe.inf
+  # UefiPackPkg/TestDxe/TestDxe.inf
   # UefiPackPkg/UefiPackDxe/ConOutAsDebug/UefiPackDxe.inf
