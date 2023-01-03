@@ -29,6 +29,7 @@
 
 [Protocols]
   gEfiUefiPackProtocolGuid   ## CONSUMES
+  gEfiMmCpuIoProtocolGuid    ## CONSUMES
 
 [Depex]
-  TRUE
+  gEfiMmCpuIoProtocolGuid

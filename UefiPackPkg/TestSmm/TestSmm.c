@@ -1,6 +1,44 @@
 #include <Protocol/SmmBase2.h>
 #include <UefiPackSmm/UefiPackSmm.h>
 
+
+EFI_MM_CPU_IO_PROTOCOL *mMmCpuIo;
+
+
+
+EFI_STATUS
+EFIAPI
+MySmiHandler (
+  IN EFI_HANDLE  DispatchHandle,
+  IN CONST VOID* RegisterContext,
+  IN OUT VOID*   CommBuffer,
+  IN OUT UINTN*  CommBufferSize
+  )
+{
+  EFI_STATUS Status;
+  UINT8 cmdNumber;
+
+  Status = mMmCpuIo->Io.Read(
+      mMmCpuIo,
+      MM_IO_UINT8,
+      0xB2,
+      1,
+      &cmdNumber
+      );
+  if(Status!=EFI_SUCCESS)
+    UartPrint("mMmCpuIo->Io.Read error %d\r\n", Status);
+
+  if(cmdNumber == 0xff)
+    goto Exit;
+
+  UartPrint("[MySmiHandler] SMI 0x%02x\r\n", cmdNumber);
+
+Exit:
+  return EFI_WARN_INTERRUPT_SOURCE_QUIESCED;
+}
+
+
+
 EFI_STATUS
 EFIAPI
 SmmEntryPoint (
@@ -48,7 +86,7 @@ SmmEntryPoint (
       (VOID**)&UefiPackProtocol
       );
   if(Status!=EFI_SUCCESS)
-    UartPrint("SmmLocateProtocol error %d\r\n", Status);
+    UartPrint("SmmLocateProtocol (UefiPackProtocol) error %d\r\n", Status);
 
   Status = UefiPackProtocol->Unpack(
       buf,
@@ -74,6 +112,27 @@ SmmEntryPoint (
     UartPrint("It is inside SMRAM\r\n");
   else
     UartPrint("It is outside SMRAM\r\n");
+
+
+  // 
+  // 4: Register SMI handler
+  //
+  EFI_HANDLE hMySmiHandle;
+  Status = Smst->SmmLocateProtocol(
+      &gEfiMmCpuIoProtocolGuid,
+      NULL,
+      (VOID **)&mMmCpuIo
+      );
+  if(Status!=EFI_SUCCESS)
+    UartPrint("SmmLocateProtocol (CpuIoProtocol) error %d\r\n", Status);
+
+  Status = Smst->SmiHandlerRegister(
+      MySmiHandler,
+      NULL,
+      &hMySmiHandle
+      );
+  if(Status!=EFI_SUCCESS)
+    UartPrint("SmiHandlerRegister error %d\r\n", Status);
 
 
   UartPrint("<<< TestSmm Ended\r\n");
