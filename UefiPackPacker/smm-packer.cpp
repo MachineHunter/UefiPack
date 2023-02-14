@@ -371,7 +371,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	DWORD dwTargetBinSize;
 	UCHAR* lpTargetBinBuffer;
 	UINT extSize = 2200;
-	UINT extHeaderSize = 0x28; // sizeof(IMAGE_SECTION_HEADER) Ç∆ìØÇ∂
+	UINT extHeaderSize = 0x28; // sizeof(IMAGE_SECTION_HEADER) „Å®Âêå„Åò
 	UINT sizeIncrease = 0;
 	lpTargetBinBuffer = ReadTargetFile(lpTargetFilename, &dwTargetBinSize, extSize, extHeaderSize);
 	DbgPrint("lpTargetBinBuffer: 0x%I64X", lpTargetBinBuffer);
