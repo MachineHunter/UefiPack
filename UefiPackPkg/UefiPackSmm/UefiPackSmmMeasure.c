@@ -1,15 +1,22 @@
 #include <UefiPackImpl.h>
+#include <Measure.h>
 
 
 UINT16 KeyLength = 16;   // AES-128 key so 128bit=16bytes
 BYTE   Key[16]   = {0};  // REMEMBER when changing KeyLength, change ORIG_MAX_NV_BUFFER in typedef too!
 BYTE   IV[16]    = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff };
 
+int i,j;
+
+
+Measure tEntry  = {0};
+Measure tUnpack = {0};
+Measure tGetKey = {0};
 
 
 /**
  
- Unpack function of UefiPackProtocol.
+ Unpack function of UefiPackSmmProtocol.
  This decrypts DataSize-sized data starting from DataAddr by AES-128
  using Key defined above (which is the key retrieved from TPM).
 
@@ -26,13 +33,20 @@ Unpack (
 {
   struct AES_ctx ctx;
 
+  MeasureStart(&tUnpack);
+
   AES_init_ctx_iv(&ctx, Key, IV);
   AES_CBC_decrypt_buffer(&ctx, (UINT8*)DataAddr, DataSize);
+
+  MeasureEnd(&tUnpack);
+  UartPrint("DataAddr: 0x%16X, DataSize: %d(%x)\r\n", (UINT64)DataAddr, DataSize, DataSize);
+  UartPrint("\ttUnpack: %lld\r\n", tUnpack.cycles);
+
   return EFI_SUCCESS;
 }
 
 EFI_HANDLE mUefiPackHandle = NULL;
-EFI_UEFI_PACK_PROTOCOL mUefiPack = {
+EFI_UEFI_PACK_SMM_PROTOCOL mUefiPack = {
   Unpack
 };
 
@@ -68,7 +82,7 @@ GetTpmKey (
   //
   Status = TpmRequestUse();
   if(EFI_ERROR(Status)) {
-    UartPrint("TpmRequestUse failed %d\r\n", Status);
+    UartPrint("TpmRequestUse error with %d\r\n", Status);
     return EFI_DEVICE_ERROR;
   }
 
@@ -77,12 +91,12 @@ GetTpmKey (
   //
   Status = TpmStartAuthSession(&sessionHandle);
   if(EFI_ERROR(Status)) {
-    UartPrint("TpmStartAuthSession failed %d\r\n", Status);
+    UartPrint("TpmStartAuthSession error with %d\r\n", Status);
     return EFI_DEVICE_ERROR;
   }
 
   //
-  // This is just for reading PCR value of UefiPackDxe's execution phase
+  // This is just for reading PCR value of UefiPackSmm's execution phase
   //
   Status = TpmPcrRead(
       TPM_ALG_SHA256,
@@ -91,15 +105,27 @@ GetTpmKey (
       &DigestSize
       );
   if(EFI_ERROR(Status)) {
-    UartPrint("TpmPcrRead failed %d\r\n", Status);
+    UartPrint("TpmPcrRead error with %d\r\n", Status);
     return EFI_DEVICE_ERROR;
   }
-  UartPrint("TpmPcrRead: ");
-  UINT16 i;
-  for(i=0; i<DigestSize; i++) {
-    UartPrint("%02X ", Digest[i]);
-  }
-  UartPrint("\r\n");
+  /*
+   *UartPrint("Digest:\r\n");
+   *for(i=0; i<DigestSize; i++) {
+   *  UartPrint("%02X", Digest[i]);
+   *}
+   *UartPrint("\r\n\r\n");
+   */
+  
+  /*
+   *UartPrint("Digest(pretty):\r\n");
+   *for(i=0; i<32; i+=8) {
+   *  for(j=0; j<8; j++) {
+   *    UartPrint("0x%02X, ", Digest[i+j]);
+   *  }
+   *  UartPrint("\r\n");
+   *}
+   *UartPrint("\r\n");
+   */
 
   //
   // Select PCR to use for authorization
@@ -110,7 +136,7 @@ GetTpmKey (
       0
       );
   if(Status!=EFI_SUCCESS) {
-    UartPrint("TpmPolicyPCR failed %d\r\n", Status);
+    UartPrint("TpmPolicyPCR error with %d\r\n", Status);
     return EFI_DEVICE_ERROR;
   }
 
@@ -124,7 +150,7 @@ GetTpmKey (
       Key
       );
   if(Status!=EFI_SUCCESS) {
-    UartPrint("TpmNVRead failed %d\r\n", Status);
+    UartPrint("TpmNVRead error with %d\r\n", Status);
     return EFI_DEVICE_ERROR;
   }
 
@@ -134,16 +160,17 @@ GetTpmKey (
   /*
    *Status = TpmFlushContext(&sessionHandle);
    *if(EFI_ERROR(Status)) {
-   *  UartPrint("TpmFlushContext failed %d\r\n", Status);
+   *  DebugVarLog(5, 1, &Status, sizeof(EFI_STATUS));
    *  return EFI_DEVICE_ERROR;
    *}
    */
 
-  UartPrint("Key: ");
-  for(i=0; i<KeyLength; i++) {
-    UartPrint("%02X ", Key[i]);
-  }
-  UartPrint("\r\n");
+  /*
+   *UartPrint("Key:\r\n");
+   *for(i=0; i<KeyLength; i++)
+   *  UartPrint("%02X", Key[i]);
+   *UartPrint("\r\n");
+   */
 
   return EFI_SUCCESS;
 }
@@ -154,21 +181,24 @@ GetTpmKey (
  
  Driver's entry point.
  This first reads key from TPM and stores it in global variable.
- Then, installs UefiPackProtocol for other Dxe drivers to use when unpacking them self.
+ Then, installs UefiPackSmmProtocol for other SMM mods to use when unpacking them self.
 
  @param[in]  ImageHandle  The firmware allocated handle for the EFI image
  @param[in]  SystemTable  A pointer to the EFI System Table.
 
 **/
 EFI_STATUS
-EFIAPI 
-DriverEntry(
-    IN EFI_HANDLE ImageHandle,
-    IN EFI_SYSTEM_TABLE *SystemTable
-    )
+EFIAPI
+SmmEntryPoint (
+  IN EFI_HANDLE        ImageHandle,
+  IN EFI_SYSTEM_TABLE  *SystemTable
+  )
 {
   EFI_STATUS Status;
-  UartPrint(">>> UefiPackDxe start\r\n");
+  UartPrint(">>> UefiPackSmm Entry\r\n");
+
+  MeasureStart(&tEntry);
+  MeasureStart(&tGetKey);
 
   //
   // 1: Read and set Key as a global variable
@@ -176,66 +206,32 @@ DriverEntry(
   //
   Status = GetTpmKey(Key, KeyLength);
   if(EFI_ERROR(Status)) {
+    UartPrint("GetTpmKey error with %d\r\n", Status);
     return EFI_SUCCESS;
   }
 
+  MeasureEnd(&tGetKey);
+
   // 
-  // 2: Install UefiPackProtocol
+  // 2: Install UefiPackSmmProtocol
   //
-  Status = gBS->InstallMultipleProtocolInterfaces(
+  Status = gSmst->SmmInstallProtocolInterface(
       &mUefiPackHandle,
-      &gEfiUefiPackProtocolGuid,
-      &mUefiPack,
-      NULL
+      &gEfiUefiPackSmmProtocolGuid,
+      EFI_NATIVE_INTERFACE,
+      &mUefiPack
       );
-  if(EFI_ERROR(Status)) {
-    UartPrint("InstallMultipleProtocolInterfaces failed\r\n");
-    return EFI_SUCCESS;
+
+  if(Status!=EFI_SUCCESS) {
+    UartPrint("SmmInstallProtocolInterface failed with %d\r\n", Status);
   }
-
-  // 
-  // 3: Just a testing of UefiPackProtocol
-  //
-  UartPrint("UefiPackProtocol test start\r\n");
-
-  UartPrint("before enc: ");
-  BYTE buf[0x10] = {0};
-  UINT32 i;
-  for(i=0; i<0x10; i++) {
-    buf[i] = i;
-    UartPrint("%02X ", buf[i]);
-  }
-  UartPrint("\r\n");
-
-  struct AES_ctx ctx;
-  AES_init_ctx_iv(&ctx, Key, IV);
-  AES_CBC_encrypt_buffer(&ctx, (UINT8*)buf, 0x10);
-
-  UartPrint("encryted buf: ");
-  for(i=0; i<0x10; i++) {
-    UartPrint("%02X ", buf[i]);
-  }
-  UartPrint("\r\n");
-
-  EFI_UEFI_PACK_PROTOCOL *UefiPackProtocol;
-  Status = gBS->LocateProtocol(
-      &gEfiUefiPackProtocolGuid,
-      NULL,
-      (VOID**)&UefiPackProtocol
-      );
-  if(EFI_ERROR(Status))
-    UartPrint("LocateProtocol (UefiPackProtocol) failed %d\r\n", Status);
-
-  Status = UefiPackProtocol->Unpack(buf, 0x10);
-  if(EFI_ERROR(Status))
-    UartPrint("UefiPackProtocol->Unpack failed %d\r\n", Status);
-
-  UartPrint("decrypted buf: ");
-  for(i=0; i<0x10; i++) {
-    UartPrint("%02X ", buf[i]);
-  }
-  UartPrint("\r\n");
   
-  UartPrint("<<< UefiPackDxe end\r\n");
+  MeasureEnd(&tEntry);
+
+  UartPrint("Clock cycles [cycles]:\r\n");
+  UartPrint("\ttEntry:  %lld\r\n", tEntry.cycles);
+  UartPrint("\ttGetKey: %lld\r\n", tGetKey.cycles);
+
+  UartPrint("<<< UefiPackSmm Ended\r\n");
   return EFI_SUCCESS;
 }

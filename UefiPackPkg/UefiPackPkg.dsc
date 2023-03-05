@@ -52,7 +52,7 @@
   UefiPackPkg/TestSmm/TestSmm.inf
   # UefiPackPkg/ProtocolTestSmm/ProtocolTestSmm.inf
   # UefiPackPkg/UartTestDxe/UartTestDxe.inf
-  # UefiPackPkg/UefiPackSmm/UefiPackSmm.inf
+  UefiPackPkg/UefiPackSmm/UefiPackSmm.inf
   # UefiPackPkg/ReadPcrDxe/ReadPcrDxe.inf
   # UefiPackPkg/ReadPcrDxe2/ReadPcrDxe2.inf
   # UefiPackPkg/SealKeyDxe/SealKeyDxe.inf

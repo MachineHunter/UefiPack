@@ -5,6 +5,7 @@
 #include <Library/BaseMemoryLib.h>
 #include <IndustryStandard/Tpm20.h>
 #include <Library/Tpm2DeviceLib.h>
+#include <UartPrint.h>
 
 #include "tiny-AES-c/aes.h"
 

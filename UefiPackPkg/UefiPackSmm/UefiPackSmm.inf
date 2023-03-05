@@ -13,9 +13,11 @@
   UefiPackImpl.h
   UefiPackImpl.c
   UefiPackSmm.h
-  UefiPackSmm.c
+  # UefiPackSmm.c
+  UefiPackSmmMeasure.c
   tiny-AES-c/aes.h
   tiny-AES-c/aes.c
+  Measure.h
 
 [Packages]
   MdePkg/MdePkg.dec
@@ -33,7 +35,7 @@
   Tpm2DeviceLib
 
 [Protocols]
-  gEfiUefiPackProtocolGuid   ## PRODUCES
+  gEfiUefiPackSmmProtocolGuid   ## PRODUCES
 
 [Depex]
   TRUE
