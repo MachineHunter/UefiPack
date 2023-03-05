@@ -134,11 +134,11 @@ void FindSection(PE* pe, SectionConfig* target, SectionConfig* ext) {
 }
 
 uint8_t aes128key[16] = {
-	0x17, 0x15, 0xda, 0x9c, 0x4a, 0x65, 0xe1, 0x2d, 0x60, 0xd9, 0x82, 0x26, 0x32, 0x2c, 0xa1, 0x3f
+	0xa7, 0xe3, 0xf1, 0x2b, 0xa2, 0xc4, 0x9f, 0x8e, 0x77, 0x61, 0x68, 0x2c, 0x50, 0x40, 0xbd, 0x10
 };
 
 uint8_t iv[16] = {
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+	0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff
 };
 
 void aes_encrypt(UCHAR* start, DWORD size) {
@@ -164,7 +164,7 @@ UCHAR decodeStub[] = {
 	0xa4, 0xbb, 0x5e, 0xf7, 0xff, 0xca, 0x82, 0xfb,
 
 	// EfiMain
-	0xeb, 0xfe,                                                       // 2 deadloop for debug (eb fe)
+	0x90, 0x90,                                                       // 2 deadloop for debug (eb fe)
 	0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,                   // 8 push registers
 	0x48, 0x83, 0xec, 0x48,                                           // 4 sub rsp, 0x48
 	0x48, 0x89, 0xd3,                                                 // 3 mov rbx, SystemTable(rdx)
@@ -189,12 +189,12 @@ UCHAR decodeStub[] = {
 
 UINT extEfiMainOffset = 0;
 void CreateDecodeStub(QWORD SectionVaddr, QWORD SectionVsize, QWORD oep, QWORD extRaddr, DWORD decodeStubOffset) {
-	extEfiMainOffset       = 15;
-	UINT offset1Offset     = extEfiMainOffset + 2 + 8 + 4 + 3 + 4 + 5 + 1 + 3 + 4;
-	UINT offset2Offset     = offset1Offset + 3 + 4;
+	extEfiMainOffset = 15;
+	UINT offset1Offset = extEfiMainOffset + 2 + 8 + 4 + 3 + 4 + 5 + 1 + 3 + 4;
+	UINT offset2Offset = offset1Offset + 3 + 4;
 	UINT DecryptAddrOffset = offset2Offset + 3 + 3 + 5 + 11 + 5 + 3;
 	UINT DecryptSizeOffset = DecryptAddrOffset + 7 + 3 + 3;
-	UINT OepOffset         = DecryptSizeOffset + 7 + 2 + 4 + 8 + 2;
+	UINT OepOffset = DecryptSizeOffset + 7 + 2 + 4 + 8 + 2;
 
 	long _OepOffset = oep - (extRaddr + OepOffset - 1) - 5;
 	DWORD offset1 = extEfiMainOffset + 2 + 8 + 4 + 3 + 4 + 5 + 1;
