@@ -13,6 +13,7 @@ Encrypts UEFI Modules (DXE driver and SMM modules) by AES-128 using key sealed i
 	* TestDxe: Sample SMM module for testing
 * UefiPackPacker (VS2019)
 	* dxe-packer.cpp: Packs DXE driver which can be unpacked by UefiPackDxe
+	* dxe-packer-automated-addresss-shift-ghidra.cpp: Packs DXE driver and shift address of protocol functions (requires ghidra+efiseek)
 	* smm-packer.cpp: Packs SMM module which can be unpacked by UefiPackSmm
 	* bootloader-packer-fail.cpp: Supposed to pack boot loader/boot manager (such as bootmgfw.efi) but currently not working
 	* main.cpp: Copy the contents of one of the code above and compile to build a packer executable
@@ -35,6 +36,8 @@ Encrypts UEFI Modules (DXE driver and SMM modules) by AES-128 using key sealed i
 2. copy either dxe-packer.cpp or smm-packer.cpp to main.cpp
 3. make sure to rewrite the key with your key sealed in TPM
 4. `Ctrl-b` to build
+
+Note that after packing with dxe-packer.cpp or smm-packer.cpp, if the packed DXE/SMM modules installs any protocol, the function address of protocol interface structure must be manually shifted. This process is included/automated in dxe-packer-automated-address-shift-ghidra.cpp, but this requires ghidra+efiseek environment and changing the path in the source code.
 
 
 <br/>

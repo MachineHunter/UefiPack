@@ -1,4 +1,4 @@
-﻿#include <windows.h>
+#include <windows.h>
 #include <dbghelp.h>
 #include <stdlib.h>
 #include <iostream>
