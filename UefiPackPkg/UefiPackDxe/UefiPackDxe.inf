@@ -8,11 +8,15 @@
 
 [Sources]
   UefiPackDxe.h
-  UefiPackDxe.c
+  # UefiPackDxe.c
+  UefiPackDxeMeasure.c
   UefiPackImpl.h
   UefiPackImpl.c
+  UartPrint.h
+  UartPrint.c
   tiny-AES-c/aes.h
   tiny-AES-c/aes.c
+  Measure.h
 
 [Packages]
   MdePkg/MdePkg.dec

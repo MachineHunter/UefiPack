@@ -48,9 +48,8 @@ SmmEntryPoint (
 {
   int i;
   EFI_STATUS Status;
-  BYTE buf[0x10] = {0};
-  for(i=0; i<0x10; i++)
-    buf[i] = i;
+
+  BYTE buf[50000] = {0};
 
   UartPrint("\r\n>>> TestSmm Entry\r\n");
 
@@ -88,10 +87,12 @@ SmmEntryPoint (
   if(Status!=EFI_SUCCESS)
     UartPrint("SmmLocateProtocol (UefiPackSmmProtocol) error %d\r\n", Status);
 
-  Status = UefiPackSmmProtocol->Unpack(
-      buf,
-      0x10
-      );
+
+  // Measure
+  UefiPackSmmProtocol->Unpack(buf, 3000);
+  UefiPackSmmProtocol->Unpack(buf, 20000);
+  UefiPackSmmProtocol->Unpack(buf, 50000);
+
   UartPrint("buf: ");
   for(i=0; i<0x10; i++)
     UartPrint("%02X",buf[i]);

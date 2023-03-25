@@ -11,24 +11,24 @@
 
 /**
  
-  Define UefiPackProtocol's general information.
+  Define UefiPackSmmProtocol's general information.
 
 **/
 
-// 73c29316-3ecd-4fe3-a4bb-5ef7ffca82fb
-#define EFI_UEFI_PACK_PROTOCOL_GUID \
-  { 0x73c29316, 0x3ecd, 0x4fe3, { 0xa4, 0xbb, 0x5e, 0xf7, 0xff, 0xca, 0x82, 0xfb } }
+// 78fe40fb-fd3e-45bb-8fff-f35d78383db9
+#define EFI_UEFI_PACK_SMM_PROTOCOL_GUID \
+  { 0x78fe40fb, 0xfd3e, 0x45bb, { 0x8f, 0xff, 0xf3, 0x5d, 0x78, 0x38, 0x3d, 0xb9 } }
 
-extern EFI_GUID gEfiUefiPackProtocolGuid;
+extern EFI_GUID gEfiUefiPackSmmProtocolGuid;
 
 typedef EFI_STATUS (EFIAPI *UNPACK)(
     IN VOID *DataAddr,
     IN UINT32 DataSize
     );
 
-typedef struct _EFI_UEFI_PACK_PROTOCOL {
+typedef struct _EFI_UEFI_PACK_SMM_PROTOCOL {
   UNPACK Unpack;
-} EFI_UEFI_PACK_PROTOCOL;
+} EFI_UEFI_PACK_SMM_PROTOCOL;
 
 
 

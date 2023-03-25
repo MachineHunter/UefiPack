@@ -11,6 +11,7 @@
   UartPrint.h
   UartPrint.c
   TestSmm.c
+  # TestSmmMeasure.c
 
 [Packages]
   MdePkg/MdePkg.dec
@@ -28,8 +29,8 @@
   Tpm2DeviceLib
 
 [Protocols]
-  gEfiUefiPackProtocolGuid   ## CONSUMES
-  gEfiMmCpuIoProtocolGuid    ## CONSUMES
+  gEfiUefiPackSmmProtocolGuid   ## CONSUMES
+  gEfiMmCpuIoProtocolGuid       ## CONSUMES
 
 [Depex]
   gEfiMmCpuIoProtocolGuid
